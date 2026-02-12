@@ -8,33 +8,55 @@ st.subheader("Dinas Pendidikan Provinsi Sumatera Utara")
 try:
     raw_url = st.secrets["gsheets_url"]
     
-    # Fungsi ambil data berdasarkan nama tab
     def get_data(sheet_name):
-        # Menghapus bagian /edit dan menggantinya dengan export csv
         base_url = raw_url.split('/edit')[0]
         url = f"{base_url}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
         return pd.read_csv(url)
 
+    # --- FITUR PENCARIAN & FILTER ---
+    st.sidebar.header("🔍 Filter Data")
+    search_name = st.sidebar.text_input("Cari Nama Guru:")
+    
     st.markdown("---")
     col1, col2, col3 = st.columns(3)
     
+    # Inisialisasi data agar tidak error saat filter
+    if 'current_df' not in st.session_state:
+        st.session_state.current_df = None
+        st.session_state.sheet_active = ""
+
     with col1:
         if st.button("🟦 DATA GURU PNS", use_container_width=True):
-            df = get_data("Data_PNS")
-            st.success("Menampilkan Data PNS")
-            st.dataframe(df, use_container_width=True)
-
+            st.session_state.current_df = get_data("Data_PNS")
+            st.session_state.sheet_active = "PNS"
     with col2:
         if st.button("🟧 PPPK PENUH WAKTU", use_container_width=True):
-            df = get_data("Data_PPPK_Penuh")
-            st.warning("Menampilkan Data PPPK Penuh Waktu")
-            st.dataframe(df, use_container_width=True)
-
+            st.session_state.current_df = get_data("Data_PPPK_Penuh")
+            st.session_state.sheet_active = "PPPK Penuh Waktu"
     with col3:
         if st.button("🟩 PPPK PARUH WAKTU", use_container_width=True):
-            df = get_data("Data_PPPK_Paruh")
-            st.info("Menampilkan Data PPPK Paruh Waktu")
-            st.dataframe(df, use_container_width=True)
+            st.session_state.current_df = get_data("Data_PPPK_Paruh")
+            st.session_state.sheet_active = "PPPK Paruh Waktu"
+
+    # Logika Tampilan Data
+    if st.session_state.current_df is not None:
+        df_display = st.session_state.current_df.copy()
+        
+        # Filter berdasarkan Cabdis (Jika kolom 'Cabdis' ada di Excel Bapak)
+        if 'Cabdis' in df_display.columns:
+            list_cabdis = ["Semua Cabdis"] + sorted(df_display['Cabdis'].unique().tolist())
+            selected_cabdis = st.sidebar.selectbox("Pilih Wilayah Cabdis:", list_cabdis)
+            if selected_cabdis != "Semua Cabdis":
+                df_display = df_display[df_display['Cabdis'] == selected_cabdis]
+
+        # Filter berdasarkan Pencarian Nama
+        if search_name:
+            # Mencari nama yang mengandung kata kunci (tidak sensitif huruf besar/kecil)
+            df_display = df_display[df_display['Nama Lengkap'].str.contains(search_name, case=False, na=False)]
+
+        st.write(f"### Menampilkan: {st.session_state.sheet_active}")
+        st.write(f"Total Data: {len(df_display)} orang")
+        st.dataframe(df_display, use_container_width=True)
 
 except Exception as e:
-    st.error(f"Error: {e}. Pastikan link di Secrets sudah benar.")
+    st.error(f"Error: {e}")
