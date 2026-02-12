@@ -13,9 +13,10 @@ try:
         url = f"{base_url}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
         return pd.read_csv(url)
 
-    # --- SIDEBAR FILTER ---
+    # --- SIDEBAR FILTER (DUA KOTAK TERPISAH) ---
     st.sidebar.header("🔍 Filter Data")
-    search_query = st.sidebar.text_input("Cari Nama atau NIP Guru:")
+    filter_nama = st.sidebar.text_input("Cari Berdasarkan Nama:")
+    filter_nip = st.sidebar.text_input("Cari Berdasarkan NIP:")
     
     st.markdown("---")
     col1, col2, col3 = st.columns(3)
@@ -24,7 +25,7 @@ try:
         st.session_state.current_df = None
         st.session_state.sheet_active = ""
 
-    # Tombol Menu Utama
+    # Tombol Menu
     if col1.button("🟦 DATA GURU PNS", use_container_width=True):
         st.session_state.current_df = get_data("Data_PNS")
         st.session_state.sheet_active = "PNS"
@@ -39,31 +40,22 @@ try:
     if st.session_state.current_df is not None:
         df_display = st.session_state.current_df.copy()
         
-        # Penyesuaian Nama Kolom Otomatis
-        col_nama = 'Nama' if 'Nama' in df_display.columns else ('Nama Lengkap' if 'Nama Lengkap' in df_display.columns else None)
-        col_nip = 'NIP' if 'NIP' in df_display.columns else ('ID' if 'ID' in df_display.columns else None)
+        # Deteksi Nama Kolom
+        col_nama = 'Nama' if 'Nama' in df_display.columns else 'Nama Lengkap'
+        col_nip = 'NIP' if 'NIP' in df_display.columns else 'ID'
 
-        # Filter Berdasarkan Pencarian
-        if search_query:
-            conditions = []
-            if col_nama:
-                conditions.append(df_display[col_nama].astype(str).str.contains(search_query, case=False, na=False))
-            if col_nip:
-                conditions.append(df_display[col_nip].astype(str).str.contains(search_query, case=False, na=False))
+        # Filter 1: Berdasarkan Nama
+        if filter_nama and col_nama in df_display.columns:
+            df_display = df_display[df_display[col_nama].astype(str).str.contains(filter_nama, case=False, na=False)]
             
-            if conditions:
-                df_display = df_display[pd.concat(conditions, axis=1).any(axis=1)]
+        # Filter 2: Berdasarkan NIP
+        if filter_nip and col_nip in df_display.columns:
+            df_display = df_display[df_display[col_nip].astype(str).str.contains(filter_nip, case=False, na=False)]
 
-        # --- HANYA TAMPILKAN NAMA DAN NIP ---
-        cols_to_show = [c for c in [col_nip, col_nama] if c is not None]
-        
         st.write(f"### Menampilkan: {st.session_state.sheet_active}")
-        st.write(f"Total: {len(df_display)} orang")
-        
-        if cols_to_show:
-            st.dataframe(df_display[cols_to_show], use_container_width=True)
-        else:
-            st.dataframe(df_display, use_container_width=True)
+        st.write(f"Total Temuan: {len(df_display)} orang")
+        # Menampilkan semua kolom asli dari Google Sheets
+        st.dataframe(df_display, use_container_width=True)
 
 except Exception as e:
     st.error(f"Terjadi kendala: {e}")
