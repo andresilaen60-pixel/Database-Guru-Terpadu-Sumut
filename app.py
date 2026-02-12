@@ -15,9 +15,9 @@ if 'view' not in st.session_state:
 if 'selected_guru' not in st.session_state:
                                     st.session_state.selected_guru = None
 if not st.session_state.logged_in:
-st.markdown("## 🔐 Login SIMPEG")
-u = st.text_input("Username")
-p = st.text_input("Password", type="password")
+    st.markdown("## 🔐 Login SIMPEG")
+    u = st.text_input("Username")
+    p = st.text_input("Password", type="password")
 if st.button("Masuk", use_container_width=True):
                                                     df_u = get_data("Users")
 if df_u is not None:
