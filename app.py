@@ -22,12 +22,12 @@ if st.button("Masuk", use_container_width=True):
                                                     df_u = get_data("Users")
 if df_u is not None:
                                                                 check = df_u[(df_u['username'] == u) & (df_u['password'].astype(str) == p)]
-if not check.empty:
-                                                                                st.session_state.logged_in = True
-                                                                                st.session_state.role = check.iloc[0]['role']
-                                                                                st.session_state.wilayah = check.iloc[0]['wilayah']
-                                                                                st.rerun()
-                                                                                else: st.error("Akses Ditolak!")
+                                                                if not check.empty:
+                                                                    st.session_state.logged_in = True
+                                                                    st.session_state.role = check.iloc[0]['role']
+                                                                    st.session_state.wilayah = check.iloc[0]['wilayah']
+                                                                    st.rerun()
+                                                                else: st.error("Akses Ditolak!")
                                                                                         st.stop()
                                                         st.title("🏛️ SIMPEG Terpadu Sumut")
 st.sidebar.success(f"Role: {st.session_state.role}")
