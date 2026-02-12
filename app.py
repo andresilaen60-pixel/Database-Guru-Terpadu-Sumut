@@ -7,14 +7,14 @@ def get_data(sheet_name):
                 base_url = raw_url.split('/edit')[0]
                 url = f"{base_url}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
                 return pd.read_csv(url)
-                except: return None
-                    if 'logged_in' not in st.session_state:
+    except: return None
+if 'logged_in' not in st.session_state:
                         st.session_state.logged_in = False
-                        if 'view' not in st.session_state:
+if 'view' not in st.session_state:
                                 st.session_state.view = 'menu'
-                            if 'selected_guru' not in st.session_state:
+if 'selected_guru' not in st.session_state:
                                     st.session_state.selected_guru = None
-                                if not st.session_state.logged_in:
+if not st.session_state.logged_in:
                                         st.markdown("## 🔐 Login SIMPEG")
                                         u = st.text_input("Username")
                                         p = st.text_input("Password", type="password")
