@@ -15,7 +15,7 @@ try:
 
     # --- SIDEBAR FILTER ---
     st.sidebar.header("🔍 Filter Data")
-    search_query = st.sidebar.text_input("Cari Nama Guru:")
+    search_query = st.sidebar.text_input("Cari Nama atau NIP Guru:")
     
     st.markdown("---")
     col1, col2, col3 = st.columns(3)
@@ -24,7 +24,7 @@ try:
         st.session_state.current_df = None
         st.session_state.sheet_active = ""
 
-    # Tombol Menu
+    # Tombol Menu Utama
     if col1.button("🟦 DATA GURU PNS", use_container_width=True):
         st.session_state.current_df = get_data("Data_PNS")
         st.session_state.sheet_active = "PNS"
@@ -39,22 +39,31 @@ try:
     if st.session_state.current_df is not None:
         df_display = st.session_state.current_df.copy()
         
-        # Filter Cabdis otomatis
-        if 'Cabdis' in df_display.columns:
-            list_cabdis = ["Semua Cabdis"] + sorted(df_display['Cabdis'].dropna().unique().tolist())
-            selected_cabdis = st.sidebar.selectbox("Pilih Wilayah Cabdis:", list_cabdis)
-            if selected_cabdis != "Semua Cabdis":
-                df_display = df_display[df_display['Cabdis'] == selected_cabdis]
+        # Penyesuaian Nama Kolom Otomatis
+        col_nama = 'Nama' if 'Nama' in df_display.columns else ('Nama Lengkap' if 'Nama Lengkap' in df_display.columns else None)
+        col_nip = 'NIP' if 'NIP' in df_display.columns else ('ID' if 'ID' in df_display.columns else None)
 
-        # Filter Pencarian (Mendeteksi apakah kolomnya bernama 'Nama' atau 'Nama Lengkap')
+        # Filter Berdasarkan Pencarian
         if search_query:
-            target_col = 'Nama' if 'Nama' in df_display.columns else 'Nama Lengkap'
-            if target_col in df_display.columns:
-                df_display = df_display[df_display[target_col].str.contains(search_query, case=False, na=False)]
+            conditions = []
+            if col_nama:
+                conditions.append(df_display[col_nama].astype(str).str.contains(search_query, case=False, na=False))
+            if col_nip:
+                conditions.append(df_display[col_nip].astype(str).str.contains(search_query, case=False, na=False))
+            
+            if conditions:
+                df_display = df_display[pd.concat(conditions, axis=1).any(axis=1)]
 
+        # --- HANYA TAMPILKAN NAMA DAN NIP ---
+        cols_to_show = [c for c in [col_nip, col_nama] if c is not None]
+        
         st.write(f"### Menampilkan: {st.session_state.sheet_active}")
         st.write(f"Total: {len(df_display)} orang")
-        st.dataframe(df_display, use_container_width=True)
+        
+        if cols_to_show:
+            st.dataframe(df_display[cols_to_show], use_container_width=True)
+        else:
+            st.dataframe(df_display, use_container_width=True)
 
 except Exception as e:
     st.error(f"Terjadi kendala: {e}")
