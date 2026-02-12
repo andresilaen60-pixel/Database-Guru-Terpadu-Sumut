@@ -18,11 +18,11 @@ if not st.session_state.logged_in:
                                         st.markdown("## 🔐 Login SIMPEG")
                                         u = st.text_input("Username")
                                         p = st.text_input("Password", type="password")
-                                        if st.button("Masuk", use_container_width=True):
+if st.button("Masuk", use_container_width=True):
                                                     df_u = get_data("Users")
-                                                    if df_u is not None:
+if df_u is not None:
                                                                 check = df_u[(df_u['username'] == u) & (df_u['password'].astype(str) == p)]
-                                                                if not check.empty:
+if not check.empty:
                                                                                 st.session_state.logged_in = True
                                                                                 st.session_state.role = check.iloc[0]['role']
                                                                                 st.session_state.wilayah = check.iloc[0]['wilayah']
@@ -37,49 +37,49 @@ if st.sidebar.button("🚪 Log Out"):
 st.markdown("---")
 if st.session_state.view == 'menu':
         c1, c2, c3 = st.columns(3)
-    if c1.button("🟦 DATA GURU PNS", use_container_width=True):
+if c1.button("🟦 DATA GURU PNS", use_container_width=True):
                 st.session_state.category = "Data_PNS"
         st.session_state.view = 'cabdis'
         st.rerun()
-    if c2.button("🟧 PPPK PENUH WAKTU", use_container_width=True):
+if c2.button("🟧 PPPK PENUH WAKTU", use_container_width=True):
                 st.session_state.category = "Data_PPPK_Penuh"
         st.session_state.view = 'cabdis'
         st.rerun()
-    if c3.button("🟩 PPPK PARUH WAKTU", use_container_width=True):
+if c3.button("🟩 PPPK PARUH WAKTU", use_container_width=True):
                 st.session_state.category = "Data_PPPK_Paruh"
         st.session_state.view = 'cabdis'
         st.rerun()
 elif st.session_state.view == 'cabdis':
-    if st.button("⬅️ Kembali ke Menu Utama"):
+if st.button("⬅️ Kembali ke Menu Utama"):
                 st.session_state.view = 'menu'
         st.rerun()
     st.subheader(f"📍 Pilih Wilayah ({st.session_state.category})")
     list_cabdis = [f"Cabdis Wilayah {i}" for i in range(1, 15)]
-    if st.session_state.role == "Admin Cabdis":
+if st.session_state.role == "Admin Cabdis":
                 list_cabdis = [st.session_state.wilayah]
     grid = st.columns(4)
     for idx, cab in enumerate(list_cabdis):
-                if grid[idx % 4].button(cab, use_container_width=True):
+if grid[idx % 4].button(cab, use_container_width=True):
                                 st.session_state.cab_selected = cab
             st.session_state.view = 'list'
             st.rerun()
 elif st.session_state.view == 'list':
-    if st.button("⬅️ Kembali ke Pilih Cabdis"):
+if st.button("⬅️ Kembali ke Pilih Cabdis"):
                 st.session_state.view = 'cabdis'
         st.rerun()
     st.subheader(f"📋 Daftar Guru - {st.session_state.cab_selected}")
     df = get_data(st.session_state.category)
-    if df is not None:
+if df is not None:
                 df_f = df[df['Cabdis'] == st.session_state.cab_selected]
         for i, row in df_f.iterrows():
                         label = f"👤 {row['Nama']} | NIP: {row['NIP']} | NIK: {row['NIK']}"
-            if st.button(label, key=f"btn_{i}", use_container_width=True):
+if st.button(label, key=f"btn_{i}", use_container_width=True):
                                 st.session_state.selected_guru = row
                 st.session_state.view = 'profile'
                 st.rerun()
 elif st.session_state.view == 'profile':
     g = st.session_state.selected_guru
-    if st.button("⬅️ Kembali ke Daftar"):
+if st.button("⬅️ Kembali ke Daftar"):
                 st.session_state.view = 'list'
         st.rerun()
     st.success(f"📊 PROFIL LENGKAP: {g['Nama']}")
@@ -88,5 +88,5 @@ elif st.session_state.view == 'profile':
             with t2: st.write(f"Jabatan: {g['Jabatan']}\n\nUnit: {g['Unit_Kerja']}\n\nGol: {g['Golongan']}")
                     with t3: st.write(f"Pendidikan: {g['Pendidikan_Terakhir']} - {g['Jurusan']}\n\nKampus: {g['Kampus']}")
                             with t7:
-                                        if pd.notna(g['Link_Ijazah']): st.markdown(f"")
-                                                    if pd.notna(g['Link_SK_Pangkat']): st.markdown(f"")
+if pd.notna(g['Link_Ijazah']): st.markdown(f"")
+if pd.notna(g['Link_SK_Pangkat']): st.markdown(f"")
